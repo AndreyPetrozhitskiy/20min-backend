@@ -12,4 +12,12 @@ app.use('/api/users', userRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/role', membersRouter);
 
-app.listen(PORT, () => console.log(`Сервер запущен на ${PORT} порту`))
+const start = () => {
+    try {
+        app.listen(PORT, () => console.log(`Сервер запущен на ${PORT} порту`))
+    } catch (e) {
+        console.log(e)
+    }
+
+}
+start()
