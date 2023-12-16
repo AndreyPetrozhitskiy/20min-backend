@@ -13,7 +13,7 @@ class UserContoroller {
             username: user.username,
         };
     
-        const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpirationTime });
+        const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '72h' });
         return token;
       }
     // async registrationUser(req,res){
