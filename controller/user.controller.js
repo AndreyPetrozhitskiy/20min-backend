@@ -80,7 +80,7 @@ class UserContoroller {
         if(getUsers.rows.length < 1){
             return res.status(400).json({error: `Пользователи отсутствуют`})
         }
-        return  res.json({Id:getUsers.rows.UserID,Name:getUsers.rows.username,Photo:getUsers.rows.avatar}) 
+        return  res.json(getUsers.rows) 
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
@@ -93,7 +93,7 @@ class UserContoroller {
             if(getUsers.rows.length < 1){
                 return res.status(400).json({error: `Пользователь с id ${id} не найден`})
             }
-            res.json({Id:getUsers.rows.UserID,Name:getUsers.rows.username,Photo:getUsers.rows.avatar})
+            res.json(getUsers.rows)
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
@@ -121,7 +121,7 @@ class UserContoroller {
                   `UPDATE users set "avatar" = $1  WHERE "UserID" = $2 RETURNING * `,
                 [fullPath,id] 
                 );
-                return  res.json({Id:newAvatar.rows[0].UserID, Photo:newAvatar.rows[0].avatar});
+                return  res.json({Id:newAvatar.rows[0].UserID,Photo:newAvatar.rows[0].avatar});
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
