@@ -50,7 +50,7 @@ class UserContoroller {
             if (!validPassword) {
                 return res.status(400).json({error: `Введен неверный пароль`})
             }
-            res.json(nameSearch.rows[0])
+            res.json("Вы успешно авторизованы")
     } catch (e) {
         console.log(`Ошибка: ${e.message}`);
         res.status(400).json(`Ошибка: ${e.message}`);
