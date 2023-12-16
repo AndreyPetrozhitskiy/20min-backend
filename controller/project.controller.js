@@ -246,7 +246,7 @@ class ProjectContoroller {
                 [id] 
                 )
 
-            res.json('Запись удалена!')
+            res.json('Проект удален!')
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             res.status(400).json(`Ошибка: ${e.message}`);

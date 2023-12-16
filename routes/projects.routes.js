@@ -31,7 +31,8 @@ const upload = multer({ storage, fileFilter });
 
 // Создать проект
 router.post('/create', upload.single('photo'),[
-    check('name',"Имя проекта не может быть пустым").notEmpty()
+    check('name',"Имя проекта не может быть пустым").notEmpty(),
+    check('creatorUser',"ID  юзера не может быть пустым").notEmpty()
 ], projectContoroller.createProject);
 // Получить все проекты
 router.get('/',projectContoroller.getProject)
