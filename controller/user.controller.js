@@ -80,7 +80,7 @@ class UserContoroller {
         if(getUsers.rows.length < 1){
             return res.status(400).json({error: `Пользователи отсутствуют`})
         }
-        return  res.json(getUsers.rows) 
+        return  res.json({Id:getUsers.rows.UserID,Name:getUsers.rows.username,Photo:getUsers.rows.avatar}) 
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
@@ -93,7 +93,7 @@ class UserContoroller {
             if(getUsers.rows.length < 1){
                 return res.status(400).json({error: `Пользователь с id ${id} не найден`})
             }
-            res.json(getUsers.rows)
+            res.json({Id:getUsers.rows.UserID,Name:getUsers.rows.username,Photo:getUsers.rows.avatar})
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
