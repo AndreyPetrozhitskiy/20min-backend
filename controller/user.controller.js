@@ -7,6 +7,13 @@ const {validationResult} = require('express-validator')
 const path = require('path');
 
 class UserContoroller {
+    constructor() {
+        // Привязываем методы к экземпляру класса
+        this.generateToken = this.generateToken.bind(this);
+        this.registrationUser = this.registrationUser.bind(this);
+        this.loginUser = this.loginUser.bind(this);
+        // ... (привязать другие методы, если необходимо)
+    }
     async generateToken(user) {
         const payload = {
             userId: user.UserID, // Ваш объект пользователя имеет свойство 'UserID'
@@ -16,58 +23,7 @@ class UserContoroller {
         const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '72h' });
         return token;
       }
-    // async registrationUser(req,res){
-    //     try {
-    //         const errors = validationResult(req)
-    //         if(!errors.isEmpty()) {
-    //             return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
-    //         }
-    //         const  {name,password} = req.body
-    //         const result = await db.query('SELECT * FROM users WHERE username = $1', [name]);
-    //         if (result.rows.length > 0) {
-    //             const isValidPassword = bcrypt.compareSync(password, result.rows[0].password);
-    //             if (isValidPassword) {
-    //               // Пользователь ввел правильный пароль
-    //               return res.status(400).json({
-    //                 error: 'Вы уже зарегистрированы. Пожалуйста, авторизуйтесь.',
-    //               });
-    //             } else {
-    //               // Пользователь ввел неправильный пароль
-    //               return res.status(400).json({
-    //                 error: 'Пользователь с таким именем уже существует. Пожалуйста, выберите другое имя.',
-    //               });
-    //             }
-    //           }
-    //         const hashPassword  = bcrypt.hashSync(password, 7);
-    //         const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
-    //         res.json(newUser.rows[0]);
-
-    //     } catch (e) {
-    //         console.log(`Ошибка: ${e.message}`);
-    //         res.status(400).json(`Ошибка: ${e.message}`);
-    //     }
-    // }
-    // async loginUser(req,res){
-    //     try {
-    //         const errors = validationResult(req)
-    //         if(!errors.isEmpty()) {
-    //             return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
-    //         }
-    //         const  {name,password} = req.body
-    //         const nameSearch = await db.query('SELECT * FROM users WHERE username = $1', [name]);
-    //         if(nameSearch.rows.length === 0){
-    //             return res.status(400).json({error: `Пользователь ${name} не найден`})
-    //         }
-    //         const validPassword = bcrypt.compareSync(password,nameSearch.rows[0].password )
-    //         if (!validPassword) {
-    //             return res.status(400).json({error: `Введен неверный пароль`})
-    //         }
-    //         res.json("Вы успешно авторизованы")
-    // } catch (e) {
-    //     console.log(`Ошибка: ${e.message}`);
-    //     res.status(400).json(`Ошибка: ${e.message}`);
-    // }
-    // }
+   
     async registrationUser(req, res) {
         try {
           const errors = validationResult(req);
@@ -98,7 +54,7 @@ class UserContoroller {
     
           // Генерация JWT-токена после успешной регистрации
           try {
-            const token = await this.generateToken(newUser.rows[0]);
+            const token = await generateToken(newUser.rows[0]);
             // Делайте что-то с полученным токеном
             console.log('Token:', token);
           } catch (error) {
