@@ -31,7 +31,7 @@ const upload = multer({ storage, fileFilter });
 
 // Создать проект
 router.post('/create', upload.single('photo'),[
-    check('name',"Имя пользователя не может быть пустым").notEmpty()
+    check('name',"Имя проекта не может быть пустым").notEmpty()
 ], projectContoroller.createProject);
 // Получить все проекты
 router.get('/',projectContoroller.getProject)
@@ -41,7 +41,7 @@ router.get('/:id',projectContoroller.getOneProject)
 // Сменить имя проекта
 router.put('/name',[
     check('id',"Id не может быть пустым").isLength({min:1}),
-    check('name',"Имя пользователя не может быть пустым").notEmpty()
+    check('name',"Имя проекта не может быть пустым").notEmpty()
 ],projectContoroller.updateProjectName)
 // Сменить описание проекта
 router.put('/description',[
