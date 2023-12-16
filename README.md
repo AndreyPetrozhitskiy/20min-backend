@@ -5,10 +5,10 @@
 <h1 align="center">Для работы требуется</h1>
             NodeJs
             PostgreSQL 16
-###
+
 <h1 align="center">Установка</h1>
 
-             npm install
+            npm install
 ###
 <h1 align="center">Запуск</h1>
             npm start
