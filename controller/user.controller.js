@@ -7,13 +7,6 @@ const {validationResult} = require('express-validator')
 const path = require('path');
 
 class UserContoroller {
-    constructor() {
-        // Привязываем методы к экземпляру класса
-        this.generateToken = this.generateToken.bind(this);
-        this.registrationUser = this.registrationUser.bind(this);
-        this.loginUser = this.loginUser.bind(this);
-        // ... (привязать другие методы, если необходимо)
-    }
     async generateToken(user) {
         const payload = {
             userId: user.UserID, // Ваш объект пользователя имеет свойство 'UserID'
@@ -51,7 +44,7 @@ class UserContoroller {
     
           const hashPassword = bcrypt.hashSync(password, 7);
           const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
-    
+                      console.log(newUser.rows[0])
           // Генерация JWT-токена после успешной регистрации
           try {
             const token = await generateToken(newUser.rows[0]);
@@ -68,6 +61,55 @@ class UserContoroller {
         }
       }
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       async loginUser(req, res) {
         try {
           const errors = validationResult(req);
