@@ -53,7 +53,7 @@ class ProjectMembersContoroller {
 
         const updateAll = await db.query(
             `UPDATE projectmembers set "ProjectID" = $1,"UserID" = $2,"Role"=$3  WHERE "MemberID" = $4 RETURNING * `,
-            [projectID,user,role,id] 
+            [projectID,userID,role,id] 
             )
 
         res.json(updateAll.rows)
