@@ -1,9 +1,11 @@
-const db  = require("../db.js")
+const config = require('../config.js');
 const jwt = require('jsonwebtoken');
+const db  = require("../db.js")
+
 const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator')
 const path = require('path');
-const config = require('../config.js');
+
 class UserContoroller {
     async generateToken(user) {
         const payload = {
