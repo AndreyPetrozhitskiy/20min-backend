@@ -14,15 +14,13 @@ const generateAccessToken = (id, name) => {
     return jwt.sign(payload,jwtSecret,{ expiresIn: "72h"})
 }
 class UserContoroller {
-  
-   
+  // Регистрация
     async registrationUser(req, res) {
         try {
           const errors = validationResult(req);
           if (!errors.isEmpty()) {
             return res.status(400).json(errors.errors.map((e, index) => `${index}. Ошибка:${e.msg}`));
           }
-    
           const { name, password } = req.body;
           const result = await db.query('SELECT * FROM users WHERE username = $1', [name]);
     
@@ -40,44 +38,37 @@ class UserContoroller {
                           });
                         }
                       }
-    
           const hashPassword = bcrypt.hashSync(password, 7);
           const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
             
           // Генерация JWT-токена после успешной регистрации
           const token = generateAccessToken(newUser.rows[0].UserID,newUser.rows[0].username)
     
-          return res.json({  token });
+          return res.json({  ID:newUser.rows[0].UserID, Name:newUser.rows[0].username, TokenUser: token });
         } catch (e) {
           console.log(`Ошибка: ${e.message}`);
           return res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
-    
-
+    // Авторизация
       async loginUser(req, res) {
         try {
           const errors = validationResult(req);
           if (!errors.isEmpty()) {
             return res.status(400).json(errors.errors.map((e, index) => `${index}. Ошибка:${e.msg}`));
           }
-    
           const { name, password } = req.body;
           const nameSearch = await db.query('SELECT * FROM users WHERE username = $1', [name]);
-    
           if (nameSearch.rows.length === 0) {
             return res.status(400).json({ error: `Пользователь ${name} не найден` });
           }
-    
           const validPassword = bcrypt.compareSync(password, nameSearch.rows[0].password);
-    
           if (!validPassword) {
             return res.status(400).json({ error: `Введен неверный пароль` });
           }
-    
           // Генерация JWT-токена после успешного входа
           const token = generateAccessToken(nameSearch.rows[0].UserID,nameSearch.rows[0].username)
-          return res.json({  token });
+          return res.json({   ID:nameSearch.rows[0].UserID, Name:nameSearch .rows[0].username, TokenUser: token});
         } catch (e) {
           console.log(`Ошибка: ${e.message}`);
           return res.status(400).json(`Ошибка: ${e.message}`);
@@ -130,7 +121,7 @@ class UserContoroller {
                   `UPDATE users set "avatar" = $1  WHERE "UserID" = $2 RETURNING * `,
                 [fullPath,id] 
                 );
-                return  res.json(newAvatar.rows[0]);
+                return  res.json({Id:newAvatar.rows[0].UserID, Photo:newAvatar.rows[0].avatar});
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
@@ -185,6 +176,28 @@ class UserContoroller {
             return  res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
-      
+      async deleteUser(req,res){
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+
+            const  {id} = req.body
+            const getProject =  await db.query(`SELECT * FROM users WHERE "UserID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Пользователь с id ${id} не найден`})
+            }
+            const deleteProject = await db.query(
+                `DELETE FROM users WHERE "UserID" = $1 RETURNING * `,
+                [id] 
+                )
+
+            res.json('Пользователь удален!')
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
+      }
 }
 module.exports = new UserContoroller()

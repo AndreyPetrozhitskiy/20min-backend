@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const db  = require("../db.js")
 const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator')
-const path = require('path');
-
 
 const generateAccessToken = (id, name) => {
     const payload = {
@@ -14,6 +12,7 @@ const generateAccessToken = (id, name) => {
     return jwt.sign(payload,jwtSecret,{ expiresIn: "72h"})
 }
 class RootUserContoroller {
+    // Авторизация админа
     async loginUser(req,res){
         try {
             const errors = validationResult(req)

@@ -1,34 +1,56 @@
 const db  = require("../db.js")
 
-
 class ProjectMembersContoroller {
     async createMembersRoles(req,res){
-        const  {project,user,role} = req.body
+        const  {projectID,userID,role} = req.body
+        const result = await db.query('SELECT * FROM projects WHERE "ProjectID" = $1', [projectID]);
+          if (result.rows.length < 0) {
+            return  res.status(400).json({error:'Проекта с таким именем не существует. Пожалуйста, выберите другое имя.'});
+          }
+          const checkUser = await db.query('SELECT * FROM users WHERE "UserID" = $1', [userID]);
+          if (checkUser.rows.length < 0) {
+            return  res.status(400).json({error:'Пользователя с таким именем не существует. Пожалуйста, выберите другое пользователя.'});
+          }
         const newRole = await db.query(
             `INSERT INTO projectmembers 
             ("ProjectID","UserID","Role" ) 
             values ($1, $2, $3)  
             RETURNING *  `, 
-            [project,user,role]
+            [projectID,userID,role]
             )
     
         res.json(newRole.rows[0])
     }
     async getMembersRoles(req,res){
         const getProject =  await db.query(`SELECT * FROM projectmembers `)
-        
+          if (getProject.length < 0) {
+            return  res.status(400).json({error:'Роли не найдены'});
+          }
         res.json(getProject.rows)
     }
     async getOneMembersRoles(req,res){
         const id = req.params.id
         const getProject =  await db.query(`SELECT * FROM projectmembers WHERE "MemberID" = $1`,[id])
-       
+        if (getProject.length < 0) {
+            return  res.status(400).json({error:'Роль не найдена'});
+          }
         res.json(getProject.rows)
     }
     async updateAllRole(req,res){
-        console.log('Request body:', req.body);
-        const  {project,user,role,id} = req.body
-        console.log('Received data:', project,user,role,id);
+        const  {projectID,userID,role,id} = req.body
+        const checkIdRole = await db.query('SELECT * FROM projectmembers  WHERE "MemberID" = $1', [id]);
+        if (checkIdRole.rows.length < 0) {
+          return  res.status(400).json({error:'Проекта с таким  id не существует. Пожалуйста, выберите другой id.'});
+        }
+        const checkprojectID = await db.query('SELECT * FROM projects WHERE "ProjectID" = $1', [projectID]);
+        if (checkprojectID.rows.length < 0) {
+          return  res.status(400).json({error:'Проекта с таким именем не существует. Пожалуйста, выберите другое имя.'});
+        }
+        const checkUser = await db.query('SELECT * FROM users WHERE "UserID" = $1', [userID]);
+        if (checkUser.rows.length < 0) {
+          return  res.status(400).json({error:'Пользователя с таким именем не существует. Пожалуйста, выберите другое пользователя.'});
+        }
+
         const updateAll = await db.query(
             `UPDATE projectmembers set "ProjectID" = $1,"UserID" = $2,"Role"=$3  WHERE "MemberID" = $4 RETURNING * `,
             [project,user,role,id] 
@@ -37,9 +59,12 @@ class ProjectMembersContoroller {
         res.json(updateAll.rows)
     }
     async updateRole(req,res){
-        console.log('Request body:', req.body);
         const  {role,id} = req.body
-        console.log('Received data:', role,id);
+        const checkIdRole = await db.query('SELECT * FROM projectmembers  WHERE "MemberID" = $1', [id]);
+        if (checkIdRole.rows.length < 0) {
+          return  res.status(400).json({error:'Проекта с таким  id не существует. Пожалуйста, выберите другой id.'});
+        }
+
         const updateRole = await db.query(
             `UPDATE projectmembers set "Role"=$1  WHERE "MemberID" = $2 RETURNING * `,
             [role,id] 
@@ -49,6 +74,10 @@ class ProjectMembersContoroller {
     }
     async deleteRole(req,res){
         const  {id} = req.body
+        const checkIdRole = await db.query('SELECT * FROM projectmembers  WHERE "MemberID" = $1', [id]);
+        if (checkIdRole.rows.length < 0) {
+          return  res.status(400).json({error:'Проекта с таким  id не существует. Пожалуйста, выберите другой id.'});
+        }
         const deleteRole = await db.query(
             `DELETE FROM projectmembers WHERE "MemberID" = $1 RETURNING * `,
             [id] 

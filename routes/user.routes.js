@@ -6,7 +6,7 @@ const path = require('path');
 
 const router = new Router()
 const uploadPath = path.join(__dirname, '../files');
-
+const rootMiddleware = require('../middleware/rootMiddleware.js')
 // Конфигурация Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -30,8 +30,6 @@ const storage = multer.diskStorage({
   };
   
   const upload = multer({ storage, fileFilter });
-
-
 
 // Регистрация
 router.post('/registration',[
@@ -62,5 +60,7 @@ router.put('/updatepassword',[
     check('oldpassword'," Старый Пароль не должен быть пустым , не меньше 5 символов или больше 100 символов").isLength({min:5,max:100}),
     check('id',"Id не может быть пустым").isLength({min:1})
 ],userContoller.updateUserPassword)
-
+router.delete('/delete',[
+  check('id',"Id не может быть пустым").isLength({min:1})
+],rootMiddleware,userContoller.deleteUser)
 module.exports = router
