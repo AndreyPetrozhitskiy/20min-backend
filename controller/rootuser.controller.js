@@ -10,7 +10,7 @@ class RootUserContoroller {
                 return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
             }
             const  {name,password} = req.body
-            const result = await db.query('SELECT * FROM users WHERE username = $1', [name]);
+            const result = await db.query('SELECT * FROM rootusers WHERE username = $1', [name]);
             if (result.rows.length > 0) {
                 const isValidPassword = bcrypt.compareSync(password, result.rows[0].password);
                 if (isValidPassword) {
@@ -26,7 +26,7 @@ class RootUserContoroller {
                 }
               }
             const hashPassword  = bcrypt.hashSync(password, 7);
-            const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
+            const newUser = await db.query('INSERT INTO rootusers (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
             res.json(newUser.rows[0]);
 
         } catch (e) {
