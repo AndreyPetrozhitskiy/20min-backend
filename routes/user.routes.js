@@ -46,9 +46,9 @@ router.get('/alluser',userContoller.getUser)
 // Получить конкретного пользователя по ID
 router.get('/one-user/:id',userContoller.getOneUser)
 // Обновление аватарки
-router.put('/updateavatar',upload.single('photo'),[
+router.put('/updateavatar',[
     check('id',"Id не может быть пустым").isLength({min:1})
-],userContoller.updateAvatar)
+],upload.single('photo'),userContoller.updateAvatar)
 // Изменить ник пользователя
 router.put('/updatename',[
     check('name',"Имя пользователя не может быть пустым").notEmpty(),
