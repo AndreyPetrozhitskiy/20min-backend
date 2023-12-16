@@ -47,7 +47,7 @@ class UserContoroller {
                       console.log(newUser.rows[0])
           // Генерация JWT-токена после успешной регистрации
           try {
-            const token = await generateToken(newUser.rows[0]);
+            const token = await generateToken(newUser.rows[0].UserID);
             // Делайте что-то с полученным токеном
             console.log('Token:', token);
           } catch (error) {
