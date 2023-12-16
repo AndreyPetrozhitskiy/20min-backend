@@ -3,9 +3,7 @@ const db  = require("../db.js")
 
 class ProjectMembersContoroller {
     async createMembersRoles(req,res){
-        // console.log('Request body:', req.body);
         const  {project,user,role} = req.body
-        // console.log('Received data:', project, user, role);
         const newRole = await db.query(
             `INSERT INTO projectmembers 
             ("ProjectID","UserID","Role" ) 

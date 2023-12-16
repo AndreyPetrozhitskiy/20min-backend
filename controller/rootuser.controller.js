@@ -1,9 +1,8 @@
 const db  = require("../db.js")
 const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator')
-const path = require('path');
 
-class UserContoroller {
+class RootUserContoroller {
     async registrationUser(req,res){
         try {
             const errors = validationResult(req)
@@ -42,7 +41,7 @@ class UserContoroller {
                 return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
             }
             const  {name,password} = req.body
-            const nameSearch = await db.query('SELECT * FROM users WHERE username = $1', [name]);
+            const nameSearch = await db.query('SELECT * FROM rootusers WHERE username = $1', [name]);
             if(nameSearch.rows.length === 0){
                 return res.status(400).json({error: `Пользователь ${name} не найден`})
             }
@@ -56,59 +55,6 @@ class UserContoroller {
         res.status(400).json(`Ошибка: ${e.message}`);
     }
     }
-    async getUser(req,res){
-        try {
-        const getUsers =  await db.query(`SELECT * FROM users `)
-        if(getUsers.rows.length < 1){
-            return res.status(400).json({error: `Пользователи отсутствуют`})
-        }
-        res.json(getUsers.rows) 
-        } catch (e) {
-            console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
-        }
-    }
-    async getOneUser(req,res){
-        try {
-            const id = req.params.id
-            const getUsers =  await db.query(`SELECT * FROM users WHERE "UserID" = $1`,[id])
-            if(getUsers.rows.length < 1){
-                return res.status(400).json({error: `Пользователь с id ${id} не найден`})
-            }
-            res.json(getUsers.rows)
-        } catch (e) {
-            console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
-        }
-    }
-    async updateAvatar(req,res){
-        try {
-            const errors = validationResult(req)
-                if(!errors.isEmpty()) {
-                    return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
-                }
-            const  {id} = req.body
-            const getUsers =  await db.query(`SELECT * FROM users WHERE "UserID" = $1`,[id])
-            if(getUsers.rows.length < 1){
-                return res.status(400).json({error: `Пользователь с id ${id} не найден`})
-            }
-            if (!req.file) {
-                return res.status(400).json({ error: 'Файл не загружен' });
-              }
-              const protocol = req.protocol; // http or https
-              const host = req.get('host'); // localhost:5000 or your domain
-              const photoPath = path.join('/files', req.file.filename);
-              const fullPath = `${protocol}://${host}${photoPath.replace(/\\/g, '/')}`;   
-              const newAvatar = await db.query(
-                  `UPDATE users set "avatar" = $1  WHERE "UserID" = $2 RETURNING * `,
-                [fullPath,id] 
-                );
-                res.json(newAvatar.rows[0]);
-        } catch (e) {
-            console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
-        }
-    }
     async updateUserName(req,res){
         try {
             const errors = validationResult(req)
@@ -116,12 +62,12 @@ class UserContoroller {
                     return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
                 }
             const  {id,name} = req.body
-            const getUsers =  await db.query(`SELECT * FROM users WHERE "UserID" = $1`,[id])
+            const getUsers =  await db.query(`SELECT * FROM rootusers WHERE "UserID" = $1`,[id])
             if(getUsers.rows.length < 1){
                 return res.status(400).json({error:`Пользователь с id ${id} не найден`})
             }
             const updateUser = await db.query(
-                `UPDATE users set username = $1  WHERE "UserID" = $2 RETURNING * `,
+                `UPDATE rootusers set username = $1  WHERE "UserID" = $2 RETURNING * `,
                 [name,id] 
                 )
 
@@ -138,7 +84,7 @@ class UserContoroller {
                     return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
                 }
             const { id,oldpassword, password } = req.body;
-            const getUsers =  await db.query(`SELECT * FROM users WHERE "UserID" = $1`,[id])
+            const getUsers =  await db.query(`SELECT * FROM rootusers WHERE "UserID" = $1`,[id])
             if(getUsers.rows.length < 1){
                 return res.status(400).json({error:`Пользователь с id ${id} не найден`})
             }
@@ -148,7 +94,7 @@ class UserContoroller {
             }
             const hashPassword  = bcrypt.hashSync(password, 7);
             const updateUser = await db.query(
-            'UPDATE users SET password = $1 WHERE "UserID" = $2 RETURNING *',
+            'UPDATE rootusers SET password = $1 WHERE "UserID" = $2 RETURNING *',
             [hashPassword, id]
             );
         
@@ -160,4 +106,4 @@ class UserContoroller {
       }
       
 }
-module.exports = new UserContoroller()
+module.exports = new RootUserContoroller()

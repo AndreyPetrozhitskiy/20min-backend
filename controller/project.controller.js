@@ -1,103 +1,256 @@
 const db  = require("../db.js")
+const path = require('path');
+const {validationResult} = require('express-validator')
 
 class ProjectContoroller {
-    async createProject(req,res){
-        const  {name,description,figma,git,photo,creatorUser} = req.body
-        const newProject = await db.query(
-            `INSERT INTO projects 
-            ("NameProject","DescriptionProject","LinkFigma","LinkGit","PhotoProject","CreatorUserID" ) 
-            values ($1, $2, $3, $4, $5, $6)  
-            RETURNING *  `, 
-            [name,description,figma,git,photo,creatorUser]
-            )
-        
-        res.json(newProject.rows[0])
 
-        // console.log(name,description,figma,git,photo,creatorUser)
-        // res.json("Vse gud")
-    }
+    async createProject(req, res) {
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+          const { name, description, figma, git, creatorUser } = req.body;
+          const result = await db.query('SELECT * FROM projects WHERE "NameProject" = $1', [name]);
+          if (result.rows.length > 0) {
+            return  res.status(400).json({error:'Проект с таким именем уже существует. Пожалуйста, выберите другое имя.'});
+          }
+          if (!req.file) {
+            return res.status(400).json({ error: 'Файл не загружен' });
+          }
+    
+          const protocol = req.protocol; // http or https
+          const host = req.get('host'); // localhost:5000 or your domain
+          const photoPath = path.join('/files', req.file.filename);
+          const fullPath = `${protocol}://${host}${photoPath.replace(/\\/g, '/')}`;
+    
+          const newProject = await db.query(
+            `INSERT INTO projects 
+            ("NameProject", "DescriptionProject", "LinkFigma", "LinkGit", "PhotoProject", "CreatorUserID") 
+            VALUES ($1, $2, $3, $4, $5, $6)  
+            RETURNING *`,
+            [name, description, figma, git, fullPath, creatorUser]
+          );
+    
+          res.json(newProject.rows[0]);
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
+      }
     async getProject(req,res){
-        const getProject =  await db.query(`SELECT * FROM projects `)
-        
-        res.json(getProject.rows)
+        try{
+            const getProject =  await db.query(`SELECT * FROM projects `)
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проекты отсутствуют`})
+            }
+            res.json(getProject.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async getOneProject(req,res){
-        const id = req.params.id
-        const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
-       
-        res.json(getProject.rows)
+        try {
+           
+            const id = req.params.id
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            res.json(getProject.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectName(req,res){
-        const  {id,name} = req.body
-        const updateName = await db.query(
-            `UPDATE projects set "NameProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [name,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+            const  {id,name} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateName = await db.query(
+                `UPDATE projects set "NameProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [name,id] 
+                )
 
-        res.json(updateName.rows)
+            res.json(updateName.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectDescription(req,res){
-        const  {id,description} = req.body
-        const updateDescription = await db.query(
-            `UPDATE projects set "DescriptionProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [description,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+            const  {id,description} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateDescription = await db.query(
+                `UPDATE projects set "DescriptionProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [description,id] 
+                )
 
-        res.json(updateDescription.rows)
+            res.json(updateDescription.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectLinkFigma(req,res){
-        const  {id,figma} = req.body
-        const updateLinkFigma = await db.query(
-            `UPDATE projects set "LinkFigma" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [figma,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+            const  {id,figma} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateLinkFigma = await db.query(
+                `UPDATE projects set "LinkFigma" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [figma,id] 
+                )
 
-        res.json(updateLinkFigma.rows)
+            res.json(updateLinkFigma.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectLinkGit(req,res){
-        const  {id,git} = req.body
-        const updateLinkGit = await db.query(
-            `UPDATE projects set "LinkGit" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [git,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+            const  {id,git} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateLinkGit = await db.query(
+                `UPDATE projects set "LinkGit" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [git,id] 
+                )
 
-        res.json(updateLinkGit.rows)
+            res.json(updateLinkGit.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectPhoto(req,res){
-        const  {id,photo} = req.body
-        const updatePhoto = await db.query(
-            `UPDATE projects set "PhotoProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [photo,id] 
-            )
-
-        res.json(updatePhoto.rows)
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
+            const { id } = req.body;
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            if (!req.file) {
+              return res.status(400).json({ error: 'Файл не загружен' });
+            }
+      
+            const protocol = req.protocol; // http or https
+            const host = req.get('host'); // localhost:5000 or your domain
+            const photoPath = path.join('/files', req.file.filename);
+            const fullPath = `${protocol}://${host}${photoPath.replace(/\\/g, '/')}`;
+      
+            const newProject = await db.query(
+              `UPDATE projects set "PhotoProject" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+            [fullPath,id] 
+            );
+      
+            res.json(newProject.rows[0]);
+          } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectStatus(req,res){
-        const  {id,status} = req.body
-        const updateStatus = await db.query(
-            `UPDATE projects set "Status" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [status,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
 
-        res.json(updateStatus.rows)
+            const  {id,status} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateStatus = await db.query(
+                `UPDATE projects set "Status" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [status,id] 
+                )
+
+            res.json(updateStatus.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async updateProjectVisibility(req,res){
-        const  {id,visibility} = req.body
-        const updateVisibility = await db.query(
-            `UPDATE projects set "Visibility" = $1  WHERE "ProjectID" = $2 RETURNING * `,
-            [visibility,id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
 
-        res.json(updateVisibility.rows)
+            const  {id,visibility} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const updateVisibility = await db.query(
+                `UPDATE projects set "Visibility" = $1  WHERE "ProjectID" = $2 RETURNING * `,
+                [visibility,id] 
+                )
+
+            res.json(updateVisibility.rows)
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
     async deleteProject(req,res){
-        const  {id} = req.body
-        const deleteProject = await db.query(
-            `DELETE FROM projects WHERE "ProjectID" = $1 RETURNING * `,
-            [id] 
-            )
+        try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()) {
+                return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
+            }
 
-        res.json('Запись удалена!')
+            const  {id} = req.body
+            const getProject =  await db.query(`SELECT * FROM projects WHERE "ProjectID" = $1`,[id])
+            if(getProject.rows.length < 1){
+                return res.status(400).json({error:`Проект с id ${id} не найден`})
+            }
+            const deleteProject = await db.query(
+                `DELETE FROM projects WHERE "ProjectID" = $1 RETURNING * `,
+                [id] 
+                )
+
+            res.json('Запись удалена!')
+        } catch (e) {
+            console.log(`Ошибка: ${e.message}`);
+            res.status(400).json(`Ошибка: ${e.message}`);
+        }
     }
 }
 module.exports = new ProjectContoroller()
