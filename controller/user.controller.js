@@ -1,21 +1,20 @@
-const config = require('../config.js');
+const {jwtSecret} = require('../config.js');
 const jwt = require('jsonwebtoken');
 const db  = require("../db.js")
-
 const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator')
 const path = require('path');
 
+
+const generateAccessToken = (id, name) => {
+    const payload = {
+        id,
+        name
+    }
+    return jwt.sign(payload,jwtSecret,{ expiresIn: "72h"})
+}
 class UserContoroller {
-    async generateToken(user) {
-        const payload = {
-            userId: user.UserID, // Ваш объект пользователя имеет свойство 'UserID'
-            username: user.username,
-        };
-    
-        const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '72h' });
-        return token;
-      }
+  
    
     async registrationUser(req, res) {
         try {
@@ -44,71 +43,17 @@ class UserContoroller {
     
           const hashPassword = bcrypt.hashSync(password, 7);
           const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
-                      console.log(newUser.rows[0])
+            
           // Генерация JWT-токена после успешной регистрации
-          try {
-            const token = await generateToken(newUser.rows[0].UserID);
-            // Делайте что-то с полученным токеном
-            console.log('Token:', token);
-          } catch (error) {
-            console.error('Ошибка при генерации токена:', error.message);
-          }
+          const token = generateAccessToken(newUser.rows[0].UserID,newUser.rows[0].username)
     
-          res.json({ user: newUser.rows[0], token });
+          return res.json({  token });
         } catch (e) {
           console.log(`Ошибка: ${e.message}`);
-          res.status(400).json(`Ошибка: ${e.message}`);
+          return res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       async loginUser(req, res) {
         try {
@@ -131,12 +76,11 @@ class UserContoroller {
           }
     
           // Генерация JWT-токена после успешного входа
-          const token = await this.generateToken(nameSearch.rows[0]);
-    
-          res.json({ message: 'Вы успешно авторизованы', token });
+          const token = generateAccessToken(nameSearch.rows[0].UserID,nameSearch.rows[0].username)
+          return res.json({  token });
         } catch (e) {
           console.log(`Ошибка: ${e.message}`);
-          res.status(400).json(`Ошибка: ${e.message}`);
+          return res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
     async getUser(req,res){
@@ -145,10 +89,10 @@ class UserContoroller {
         if(getUsers.rows.length < 1){
             return res.status(400).json({error: `Пользователи отсутствуют`})
         }
-        res.json(getUsers.rows) 
+        return  res.json(getUsers.rows) 
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
+            return res.status(400).json(`Ошибка: ${e.message}`);
         }
     }
     async getOneUser(req,res){
@@ -161,7 +105,7 @@ class UserContoroller {
             res.json(getUsers.rows)
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
+            return res.status(400).json(`Ошибка: ${e.message}`);
         }
     }
     async updateAvatar(req,res){
@@ -186,10 +130,10 @@ class UserContoroller {
                   `UPDATE users set "avatar" = $1  WHERE "UserID" = $2 RETURNING * `,
                 [fullPath,id] 
                 );
-                res.json(newAvatar.rows[0]);
+                return  res.json(newAvatar.rows[0]);
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
+            return res.status(400).json(`Ошибка: ${e.message}`);
         }
     }
     async updateUserName(req,res){
@@ -208,10 +152,10 @@ class UserContoroller {
                 [name,id] 
                 )
 
-            res.json(updateUser.rows)
+                return res.json(updateUser.rows)
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
+            return  res.status(400).json(`Ошибка: ${e.message}`);
         }
     }
     async updateUserPassword(req, res) {
@@ -235,10 +179,10 @@ class UserContoroller {
             [hashPassword, id]
             );
         
-            res.json(updateUser.rows);
+            return res.json(updateUser.rows);
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
+            return  res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
       

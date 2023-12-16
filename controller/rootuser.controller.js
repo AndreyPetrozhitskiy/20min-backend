@@ -1,7 +1,18 @@
+const {jwtSecret} = require('../config.js');
+const jwt = require('jsonwebtoken');
 const db  = require("../db.js")
 const bcrypt = require('bcryptjs');
 const {validationResult} = require('express-validator')
+const path = require('path');
 
+
+const generateAccessToken = (id, name) => {
+    const payload = {
+        id,
+        name
+    }
+    return jwt.sign(payload,jwtSecret,{ expiresIn: "72h"})
+}
 class RootUserContoroller {
     async loginUser(req,res){
         try {
@@ -18,61 +29,13 @@ class RootUserContoroller {
             if (!validPassword) {
                 return res.status(400).json({error: `Введен неверный пароль`})
             }
-            res.json("Вы успешно авторизованы")
+            const token = generateAccessToken(nameSearch.rows[0].UserID,nameSearch.rows[0].username)
+            return res.json({  token });
     } catch (e) {
         console.log(`Ошибка: ${e.message}`);
         res.status(400).json(`Ошибка: ${e.message}`);
     }
     }
-    async updateUserName(req,res){
-        try {
-            const errors = validationResult(req)
-                if(!errors.isEmpty()) {
-                    return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
-                }
-            const  {id,name} = req.body
-            const getUsers =  await db.query(`SELECT * FROM rootusers WHERE "UserID" = $1`,[id])
-            if(getUsers.rows.length < 1){
-                return res.status(400).json({error:`Пользователь с id ${id} не найден`})
-            }
-            const updateUser = await db.query(
-                `UPDATE rootusers set username = $1  WHERE "UserID" = $2 RETURNING * `,
-                [name,id] 
-                )
-
-            res.json(updateUser.rows)
-        } catch (e) {
-            console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
-        }
-    }
-    async updateUserPassword(req, res) {
-        try {
-            const errors = validationResult(req)
-                if(!errors.isEmpty()) {
-                    return res.status(400).json(errors.errors.map((e,index)=>(`${index}. Ошибка:${e.msg}`)))
-                }
-            const { id,oldpassword, password } = req.body;
-            const getUsers =  await db.query(`SELECT * FROM rootusers WHERE "UserID" = $1`,[id])
-            if(getUsers.rows.length < 1){
-                return res.status(400).json({error:`Пользователь с id ${id} не найден`})
-            }
-            const validPassword = bcrypt.compareSync(oldpassword,getUsers.rows[0].password )
-            if (!validPassword) {
-                return res.status(400).json({error:`Введен неверный пароль`})
-            }
-            const hashPassword  = bcrypt.hashSync(password, 7);
-            const updateUser = await db.query(
-            'UPDATE rootusers SET password = $1 WHERE "UserID" = $2 RETURNING *',
-            [hashPassword, id]
-            );
-        
-            res.json(updateUser.rows);
-        } catch (e) {
-            console.log(`Ошибка: ${e.message}`);
-            res.status(400).json(`Ошибка: ${e.message}`);
-        }
-      }
-      
+   
 }
 module.exports = new RootUserContoroller()
