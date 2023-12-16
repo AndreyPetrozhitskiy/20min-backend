@@ -80,7 +80,7 @@ class UserContoroller {
         if(getUsers.rows.length < 1){
             return res.status(400).json({error: `Пользователи отсутствуют`})
         }
-        return  res.json(getUsers.rows) 
+        return  res.json(getUsers.rows[0].username) 
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             return res.status(400).json(`Ошибка: ${e.message}`);
