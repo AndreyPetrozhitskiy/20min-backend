@@ -9,9 +9,8 @@ const path = require('path');
 class UserContoroller {
     async generateToken(user) {
         const payload = {
-          userId: user.UserID, // Предполагается, что ваш объект пользователя имеет свойство 'UserID'
-          username: user.username,
-          // Добавьте любые дополнительные данные, которые вы хотите включить в токен
+            userId: user.UserID, // Ваш объект пользователя имеет свойство 'UserID'
+            username: user.username,
         };
     
         const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpirationTime });

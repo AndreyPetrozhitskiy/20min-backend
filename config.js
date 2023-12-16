@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-
 let jwtSecret = generateNewSecret();
 let jwtExpirationTime = 3600; // Время истечения срока действия токена в секундах (1 час)
 
@@ -8,7 +7,7 @@ updateSecretAndExpirationTimer();
 
 function generateNewSecret() {
   // Генерация случайной фразы в качестве нового секретного ключа
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(7).toString('hex');
 }
 
 function updateSecretAndExpirationTimer() {
