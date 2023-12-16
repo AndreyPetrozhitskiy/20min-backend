@@ -97,7 +97,13 @@ class UserContoroller {
           const newUser = await db.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *', [name, hashPassword]);
     
           // Генерация JWT-токена после успешной регистрации
-          const token = await this.generateToken(newUser.rows[0]);
+          try {
+            const token = await userController.generateToken(newUser.rows[0]);
+            // Делайте что-то с полученным токеном
+            console.log('Token:', token);
+          } catch (error) {
+            console.error('Ошибка при генерации токена:', error.message);
+          }
     
           res.json({ user: newUser.rows[0], token });
         } catch (e) {
