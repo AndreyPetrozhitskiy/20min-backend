@@ -4,10 +4,11 @@ const userRouter = require('./routes/user.routes.js')
 const projectsRouter = require('./routes/projects.routes.js')
 const membersRouter = require('./routes/projectMembers.routes.js')
 const rootRouter = require('./routes/rootUser.routes.js')
-
+const cors = require('cors');
 const PORT = process.env.PORT || 5000
 
 const app = express()
+app.use(cors());
 app.use(express.json())
 app.use('/api/users', userRouter); 
 app.use('/api/root', rootRouter);

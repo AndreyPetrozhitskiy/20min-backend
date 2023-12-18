@@ -29,6 +29,7 @@ const fileFilter = (req, file, cb) => {
 };
 const upload = multer({ storage, fileFilter });
 
+
 // Создать проект
 router.post('/create', upload.single('photo'),[
     check('name',"Имя проекта не может быть пустым").notEmpty(),
