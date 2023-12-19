@@ -22,7 +22,18 @@ class ProjectMembersContoroller {
         res.json(newRole.rows[0])
     }
     async getMembersRoles(req,res){
-        const getProject =  await db.query(`SELECT * FROM projectmembers `)
+        const getProject =  await db.query(` SELECT 
+        pm."MemberID",
+        p."NameProject" AS "ProjectName",
+        u."username" AS "UserName",
+        pm."Role"
+      FROM 
+        projectmembers pm
+      JOIN 
+        projects p ON pm."ProjectID" = p."ProjectID"
+      JOIN 
+        users u ON pm."UserID" = u."UserID"
+    `);
           if (getProject.length < 1) {
             return  res.status(400).json({error:'Роли не найдены'});
           }
