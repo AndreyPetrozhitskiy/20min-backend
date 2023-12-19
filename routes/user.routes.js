@@ -42,7 +42,7 @@ router.post('/login',[
     check('password',"Пароль не должен быть пустым , не меньше 5 символов или больше 100 символов").isLength({min:5,max:100})
 ],userContoller.loginUser) 
 
-router.delete('/auth-token',userContoller.tokencheck)
+router.get('/auth-token',userContoller.tokencheck)
 
 
 // Получить всех пользователей
