@@ -23,7 +23,7 @@ class ProjectContoroller {
           const host = req.get('host'); // localhost:5000 or your domain
           const photoPath = path.join('/files', req.file.filename);
           const fullPath = `${protocol}://${host}${photoPath.replace(/\\/g, '/')}`;
-    
+       
           const newProject = await db.query(
             `INSERT INTO projects 
             ("NameProject", "DescriptionProject", "LinkFigma", "LinkGit", "PhotoProject", "CreatorUserID") 
@@ -31,7 +31,14 @@ class ProjectContoroller {
             RETURNING *`,
             [name, description, figma, git, fullPath, creatorUser]
           );
-    
+          const role = "Создатель"
+          const newRole = await db.query(
+            `INSERT INTO projectmembers 
+            ("ProjectID","UserID","Role" ) 
+            values ($1, $2, $3)  
+            RETURNING *  `, 
+            [newProject.rows[0].ProjectID,creatorUser,role]
+            )
           res.json(newProject.rows[0]);
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
