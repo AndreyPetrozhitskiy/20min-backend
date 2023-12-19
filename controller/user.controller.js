@@ -74,6 +74,18 @@ class UserContoroller {
           return res.status(400).json(`Ошибка: ${e.message}`);
         }
       }
+      async tokencheck(req, res) {
+        try {
+          const token = req.headers.authorization.split(' ')[1];
+          if (!token) {
+            return  res.status(400).json({message: "Пользователь не авторизован "});
+          }
+          const decodedData = jwt.verify(token, jwtSecret)
+          res.json(decodedData);
+        } catch (e) {
+          res.status(401).json({ error: 'Невалидный токен' });
+        }
+      }
     async getUser(req,res){
         try {
         const getUsers =  await db.query(`SELECT * FROM users `)

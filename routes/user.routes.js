@@ -41,6 +41,10 @@ router.post('/login',[
     check('name',"Имя пользователя не может быть пустым").notEmpty(),
     check('password',"Пароль не должен быть пустым , не меньше 5 символов или больше 100 символов").isLength({min:5,max:100})
 ],userContoller.loginUser) 
+
+router.delete('/auth-token',userContoller.tokencheck)
+
+
 // Получить всех пользователей
 router.get('/alluser',userContoller.getUser)
 // Получить конкретного пользователя по ID
