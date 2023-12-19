@@ -39,7 +39,7 @@ class ProjectContoroller {
             RETURNING *  `, 
             [newProject.rows[0].ProjectID,creatorUser,role]
             )
-          res.json(newProject.rows[0]);
+          res.json(newProject.rows[0],newRole.rows[0]);
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
             res.status(400).json(`Ошибка: ${e.message}`);
