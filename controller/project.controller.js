@@ -252,7 +252,11 @@ class ProjectContoroller {
                 `DELETE FROM projects WHERE "ProjectID" = $1 RETURNING * `,
                 [id] 
                 )
-
+                const deleteProjectRole = await db.query(
+                    `DELETE FROM projectmembers WHERE "ProjectID" = $1  `,
+                    [id] 
+                    )
+    
             res.json('Проект удален!')
         } catch (e) {
             console.log(`Ошибка: ${e.message}`);
